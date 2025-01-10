@@ -34,14 +34,30 @@
 // module.exports = router;
 
 const express = require('express');
+
 const puppeteer = require('puppeteer');
+require("dotenv").config();
+
 const router = express.Router();
 
 router.get("/scrape", async (req, res) => {
     const { contestName = "START167", category = "C" } = req.query;
 
     try {
-        const browser = await puppeteer.launch({ headless: true });
+        // const browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.launch({ 
+            args: [
+                "--disable-setuid-sandbox",
+                "--no-sandbox",
+                "--single-process",
+                "--no-zygote", 
+            ],
+            executablePath:
+                process.env.NODE_ENV === "production"
+                ? process.env.PUPPETEER_EXECUTABLE_PATH
+                : puppeteer.executablePath(),
+        });
+
         const page = await browser.newPage();
 
         const url = `https://www.codechef.com/rankings/${contestName}${category}?filterBy=Institution%3DIndian%20Institute%20of%20Information%20Technology%20Design%20and%20Manufacturing%2C%20Kurnool&itemsPerPage=100&order=asc&page=1&sortBy=rank`;
